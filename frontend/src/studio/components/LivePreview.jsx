@@ -23,8 +23,8 @@ export default function LivePreview({ blocks }) {
   return (
     <div className="prose-content pb-32">
       <div className="space-y-6">
-        {blocks.map((block) => (
-          <BlockRenderer key={block.id || Math.random()} block={block} />
+        {blocks.map((block, index) => (
+          <BlockRenderer key={block.id || `block-${index}`} block={block} />
         ))}
       </div>
     </div>

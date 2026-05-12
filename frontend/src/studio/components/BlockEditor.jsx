@@ -179,7 +179,7 @@ export default function BlockEditor({ blocks, onChange }) {
                     block.block_type === "code" ? "font-mono text-sm bg-gray-50 dark:bg-surface-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700" :
                     "text-gray-700 dark:text-gray-300 leading-relaxed"
                   }`}
-                  rows={block.content ? block.content.split("\\n").length : 1}
+                  rows={block.content ? Math.max(block.content.split("\n").length, 2) : 2}
                   onInput={(e) => {
                     e.target.style.height = "auto";
                     e.target.style.height = e.target.scrollHeight + "px";

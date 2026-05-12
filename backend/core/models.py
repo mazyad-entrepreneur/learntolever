@@ -12,6 +12,19 @@ from django.db import models
 from slugify import slugify
 
 
+def generate_unique_slug(instance, title, slug_field="slug"):
+    """Generate a unique slug, appending -2, -3, etc. on collision."""
+    base_slug = slugify(title)
+    slug = base_slug
+    model_class = instance.__class__
+    counter = 2
+    while model_class.objects.filter(**{slug_field: slug}).exclude(pk=instance.pk).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
+
+
+
 # ──────────────────────────────────────────────
 # Series — top-level learning program
 # ──────────────────────────────────────────────
@@ -45,7 +58,7 @@ class Series(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = generate_unique_slug(self, self.title)
         super().save(*args, **kwargs)
 
 
@@ -87,7 +100,7 @@ class Module(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = generate_unique_slug(self, self.title)
         super().save(*args, **kwargs)
 
 
@@ -138,7 +151,7 @@ class Topic(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = generate_unique_slug(self, self.title)
         # Sync status with is_published
         if self.status == "published":
             self.is_published = True

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 // Public
 import Layout from "./components/Layout";
@@ -14,6 +14,21 @@ import StudioLogin from "./studio/StudioLogin";
 import StudioDashboard from "./studio/StudioDashboard";
 import SeriesEditor from "./studio/SeriesEditor";
 import TopicEditor from "./studio/TopicEditor";
+
+function NotFound() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-surface-50 dark:bg-surface-900">
+      <div className="text-center">
+        <p className="text-6xl mb-4">🔍</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Page Not Found</h1>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">The page you're looking for doesn't exist.</p>
+        <Link to="/" className="px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 no-underline transition-all">
+          ← Back to Home
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -51,6 +66,9 @@ export default function App() {
           <Route path="/topic/:slug" element={<TopicPage />} />
           <Route path="/module/:slug/revision" element={<RevisionPage />} />
         </Route>
+
+        {/* 404 Catch-all */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

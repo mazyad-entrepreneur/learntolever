@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getModules } from "../api/client";
+import { getModules, getModule } from "../api/client";
 import { SidebarAd } from "./ads/SidebarAd";
 
 /**
@@ -10,6 +10,7 @@ import { SidebarAd } from "./ads/SidebarAd";
 export default function Sidebar({ isOpen, onClose }) {
   const [modules, setModules] = useState([]);
   const [expanded, setExpanded] = useState(null);
+  const [topics, setTopics] = useState({});
 
   useEffect(() => {
     getModules()
@@ -17,8 +18,21 @@ export default function Sidebar({ isOpen, onClose }) {
       .catch(console.error);
   }, []);
 
-  const toggleModule = (slug) => {
-    setExpanded(expanded === slug ? null : slug);
+  const toggleModule = async (slug) => {
+    if (expanded === slug) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(slug);
+    // Fetch topics for this module if not already cached
+    if (!topics[slug]) {
+      try {
+        const mod = await getModule(slug);
+        setTopics((prev) => ({ ...prev, [slug]: mod.topics || [] }));
+      } catch (err) {
+        console.error("Failed to load topics:", err);
+      }
+    }
   };
 
   return (
@@ -81,6 +95,17 @@ export default function Sidebar({ isOpen, onClose }) {
                     >
                       📋 Overview
                     </Link>
+                    {/* Individual topics */}
+                    {(topics[mod.slug] || []).map((topic) => (
+                      <Link
+                        key={topic.slug}
+                        to={`/topic/${topic.slug}`}
+                        onClick={onClose}
+                        className="block px-3 py-1.5 text-sm rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-surface-700 hover:text-brand-600 dark:hover:text-brand-400 no-underline transition-colors"
+                      >
+                        {topic.title}
+                      </Link>
+                    ))}
                     <Link
                       to={`/module/${mod.slug}/revision`}
                       onClick={onClose}

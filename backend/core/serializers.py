@@ -111,10 +111,11 @@ class ModuleDetailSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["topics"] = [
-            t for t in data["topics"]
-            if instance.topics.filter(slug=t["slug"], is_published=True).exists()
-        ]
+        # Filter topics in memory — the queryset already fetched them
+        published_slugs = set(
+            instance.topics.filter(is_published=True).values_list("slug", flat=True)
+        )
+        data["topics"] = [t for t in data["topics"] if t["slug"] in published_slugs]
         return data
 
 
@@ -147,8 +148,9 @@ class SeriesDetailSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["modules"] = [
-            m for m in data["modules"]
-            if instance.modules.filter(slug=m["slug"], is_published=True).exists()
-        ]
+        # Filter modules in memory — the queryset already fetched them
+        published_slugs = set(
+            instance.modules.filter(is_published=True).values_list("slug", flat=True)
+        )
+        data["modules"] = [m for m in data["modules"] if m["slug"] in published_slugs]
         return data
