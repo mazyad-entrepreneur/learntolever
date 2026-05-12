@@ -163,4 +163,4 @@ CORS_ALLOWED_ORIGINS = [
 prod_frontend = os.environ.get("FRONTEND_URL")
 if prod_frontend:
     CORS_ALLOWED_ORIGINS.append(prod_frontend)
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # permissive in dev only
+CORS_ALLOW_ALL_ORIGINS = True  # Temporarily allow all for deployment handshake
