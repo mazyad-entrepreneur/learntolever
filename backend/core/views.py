@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Series, Module, Topic, Problem, RevisionNote, ContentBlock
 import re
+from django.db.models import Q
 from .serializers import (
     SeriesListSerializer,
     SeriesDetailSerializer,
@@ -129,24 +130,54 @@ class SearchView(APIView):
             return Response([])
 
         results = []
-        topics = Topic.objects.filter(is_published=True, blocks__content__icontains=query).distinct()
+        topics = Topic.objects.filter(
+            Q(blocks__content__icontains=query) |
+            Q(introduction__icontains=query) |
+            Q(content_html__icontains=query) |
+            Q(logic_explanation__icontains=query) |
+            Q(common_mistakes__icontains=query) |
+            Q(beginner_notes__icontains=query) |
+            Q(visual_explanation__icontains=query),
+            is_published=True
+        ).distinct()
 
         for topic in topics:
+            section_id = ""
+            snippet = ""
+
             matching_block = topic.blocks.filter(content__icontains=query).first()
-            if not matching_block:
+            if matching_block:
+                heading_block = topic.blocks.filter(
+                    block_type="heading", 
+                    order__lte=matching_block.order
+                ).order_by('-order').first()
+
+                if heading_block:
+                    section_id = re.sub(r'[^a-z0-9]+', '-', heading_block.content.lower()).strip('-')
+                snippet = matching_block.content
+            else:
+                legacy_fields = [
+                    ("introduction", topic.introduction),
+                    ("content_html", topic.content_html),
+                    ("logic_explanation", topic.logic_explanation),
+                    ("common_mistakes", topic.common_mistakes),
+                    ("beginner_notes", topic.beginner_notes),
+                    ("visual_explanation", topic.visual_explanation)
+                ]
+                
+                for key, content in legacy_fields:
+                    if content and query.lower() in content.lower():
+                        section_id = f"section-{key}"
+                        clean_content = re.sub(r'<[^>]+>', ' ', content)
+                        snippet = clean_content
+                        break
+
+            if not snippet:
                 continue
 
-            heading_block = topic.blocks.filter(
-                block_type="heading", 
-                order__lte=matching_block.order
-            ).order_by('-order').first()
-
-            section_id = ""
-            if heading_block:
-                section_id = re.sub(r'[^a-z0-9]+', '-', heading_block.content.lower()).strip('-')
-
-            snippet = matching_block.content
             idx = snippet.lower().find(query.lower())
+            if idx == -1:
+                idx = 0
             start = max(0, idx - 40)
             end = min(len(snippet), idx + len(query) + 40)
             snippet_text = snippet[start:end]
