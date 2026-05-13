@@ -27,3 +27,4 @@ export const getModuleRevision = (slug) => fetchJSON(`/modules/${slug}/revision/
 // ── Topic endpoints ──
 export const getTopic = (slug) => fetchJSON(`/topics/${slug}/`);
 export const getTopicProblems = (slug) => fetchJSON(`/topics/${slug}/problems/`);
+export const searchTopics = (query) => fetchJSON(`/search/?q=${encodeURIComponent(query)}`);

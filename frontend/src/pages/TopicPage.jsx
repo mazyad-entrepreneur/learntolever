@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { getTopic } from "../api/client";
 import ContentRenderer from "../components/ContentRenderer";
 import ProblemCard from "../components/ProblemCard";
@@ -11,6 +11,7 @@ import { InlineAd } from "../components/ads/InlineAd";
  */
 export default function TopicPage() {
   const { slug } = useParams();
+  const location = useLocation();
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,6 +22,18 @@ export default function TopicPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [slug]);
+
+  useEffect(() => {
+    if (topic && location.hash) {
+      setTimeout(() => {
+        const id = location.hash.replace("#", "");
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
+  }, [topic, location.hash]);
 
   if (loading) {
     return (

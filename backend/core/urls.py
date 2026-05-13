@@ -39,4 +39,5 @@ urlpatterns = [
     path("modules/<slug:slug>/revision/", views.ModuleRevisionView.as_view(), name="module-revision"),
     path("topics/<slug:slug>/", views.TopicDetailView.as_view(), name="topic-detail"),
     path("topics/<slug:slug>/problems/", views.TopicProblemsView.as_view(), name="topic-problems"),
+    path("search/", views.SearchView.as_view(), name="search"),
 ]

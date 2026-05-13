@@ -40,7 +40,8 @@ function BlockRenderer({ block }) {
     case "heading": {
       const level = meta_json?.level || 2;
       const Tag = `h${level}`;
-      return <Tag className="text-gray-900 dark:text-white mt-8 mb-4">{content}</Tag>;
+      const id = content.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return <Tag id={id} className="text-gray-900 dark:text-white mt-8 mb-4">{content}</Tag>;
     }
 
     case "paragraph":

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import SearchBar from "./SearchBar";
 
 /**
  * Top navigation bar with logo, search placeholder, and theme toggle.
@@ -30,8 +31,14 @@ export default function Navbar({ darkMode, setDarkMode, onMenuToggle }) {
           </Link>
         </div>
 
+        {/* Center: Search */}
+        <div className="flex-1 flex justify-center px-4">
+          <SearchBar />
+        </div>
+
         {/* Right: theme toggle */}
         <div className="flex items-center gap-3">
+          {/* Mobile search could be placed here if needed, but for now we keep it simple */}
           <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
         </div>
       </div>

@@ -8,7 +8,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Series, Module, Topic, Problem, RevisionNote
+from .models import Series, Module, Topic, Problem, RevisionNote, ContentBlock
+import re
 from .serializers import (
     SeriesListSerializer,
     SeriesDetailSerializer,
@@ -114,3 +115,50 @@ class ModuleRevisionView(generics.ListAPIView):
             module__slug=self.kwargs["slug"],
             module__is_published=True,
         )
+
+
+# ──────────────────────────────────────────────
+# Search
+# ──────────────────────────────────────────────
+class SearchView(APIView):
+    """GET /api/search/?q=query"""
+
+    def get(self, request):
+        query = request.query_params.get("q", "").strip()
+        if not query:
+            return Response([])
+
+        results = []
+        topics = Topic.objects.filter(is_published=True, blocks__content__icontains=query).distinct()
+
+        for topic in topics:
+            matching_block = topic.blocks.filter(content__icontains=query).first()
+            if not matching_block:
+                continue
+
+            heading_block = topic.blocks.filter(
+                block_type="heading", 
+                order__lte=matching_block.order
+            ).order_by('-order').first()
+
+            section_id = ""
+            if heading_block:
+                section_id = re.sub(r'[^a-z0-9]+', '-', heading_block.content.lower()).strip('-')
+
+            snippet = matching_block.content
+            idx = snippet.lower().find(query.lower())
+            start = max(0, idx - 40)
+            end = min(len(snippet), idx + len(query) + 40)
+            snippet_text = snippet[start:end]
+            if start > 0: snippet_text = "..." + snippet_text
+            if end < len(snippet): snippet_text += "..."
+
+            results.append({
+                "topic_title": topic.title,
+                "topic_slug": topic.slug,
+                "module_slug": topic.module.slug if topic.module else "",
+                "section_id": section_id,
+                "snippet": snippet_text,
+            })
+
+        return Response(results)
