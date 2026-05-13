@@ -14,11 +14,6 @@ export default function CodeBlock({ code, language = "python" }) {
 
   return (
     <div className="relative group my-4">
-      {/* Language tag */}
-      <div className="absolute top-0 left-4 px-3 py-0.5 text-xs font-medium rounded-b-md bg-brand-600 text-white">
-        {language}
-      </div>
-
       {/* Copy button */}
       <button
         onClick={handleCopy}
@@ -29,7 +24,7 @@ export default function CodeBlock({ code, language = "python" }) {
         {copied ? "✓ Copied" : "Copy"}
       </button>
 
-      <pre className="code-block pt-8">
+      <pre className="code-block">
         <code>{code}</code>
       </pre>
     </div>
